@@ -1,7 +1,9 @@
+var path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 
 const mode = process.env.NODE_ENV || 'production';
+const deps = require("./package.json").dependencies;
 
 module.exports = {
   mode,
@@ -11,7 +13,8 @@ module.exports = {
     publicPath: "auto"
   },
   devServer: {
-    port: 8082
+    port: 8082,
+    historyApiFallback: true,
   },
   optimization: {
     minimize: mode === 'production',
@@ -54,7 +57,23 @@ module.exports = {
       exposes: {
         './RemoteApp': "./src/App.tsx"
       },
-      shared: require("./package.json").dependencies,
+      shared: {
+        react: {
+          eager: false,
+          requiredVersion: deps.react,
+          singleton: true,
+        },
+        'react-dom': {
+          eager: false,
+          requiredVersion: deps['react-dom'],
+          singleton: true,
+        },
+        'react-router-dom': {
+          eager: false,
+          requiredVersion: deps['react-router-dom'],
+          singleton: true,
+        }
+      }
     }),
     new HtmlWebpackPlugin({
       template: './src/index.html',
